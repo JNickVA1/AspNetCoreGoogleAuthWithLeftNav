@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -31,8 +32,21 @@ namespace AspNetCoreGoogleAuthWithLeftNav
 				options.MinimumSameSitePolicy = SameSiteMode.None;
 			});
 
-
+			//
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+			//
+			services.AddAuthentication(options =>
+				{
+					options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+					options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				})
+				.AddCookie()
+				.AddGoogle("Google", options =>
+				{
+					options.ClientId = Configuration["Authentication:Google:ClientId"];
+					options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+				});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,6 +64,7 @@ namespace AspNetCoreGoogleAuthWithLeftNav
 
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
+			app.UseAuthentication();
 			app.UseCookiePolicy();
 
 			app.UseMvc();
